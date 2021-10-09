@@ -1,8 +1,7 @@
 from telebot.types import Message
-from telebot import TeleBot
 
 
-def help_user(bot: TeleBot, message: Message) -> str:
+def help_user(message: Message) -> str:
     """Функция возращает строку с коммандами для бота."""
     return '/help - помощь по командам бота,' \
            '\n/lowprice - вывод самых дешёвых отелей в городе,' \

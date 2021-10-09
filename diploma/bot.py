@@ -1,6 +1,5 @@
-import telebot
-import os
+from utility import HotelRequest
 
 
-TOKEN: str = os.environ.get('TOKEN')
-bot = telebot.TeleBot(TOKEN)
+bot = HotelRequest()
+
