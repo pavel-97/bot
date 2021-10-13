@@ -14,4 +14,3 @@ commands: Dict = {
     r'/lowprice': lowprice.LowPrice,
     r'/highprice': highprice.HighPrice,
 }
-
