@@ -17,7 +17,7 @@ def get_hotels_data(url: str, querystring: Dict) -> Dict:
     """
     headers = {
         'x-rapidapi-host': "hotels4.p.rapidapi.com",
-        'x-rapidapi-key': "b8a0a6b9fcmshf21c57b813f6365p1efadejsn835c6d704fd2"
+        'x-rapidapi-key': "861d1751ecmsh2445a4083c02a1cp1daa7fjsn9b0cc18bb5e1",
     }
     response = requests.request('GET', url, headers=headers, params=querystring, timeout=10)
     return json.loads(response.text)
@@ -49,7 +49,12 @@ class HotelRequest(TeleBot):
                          exception_handler=None,
                          last_update_id=0,
                          suppress_middleware_excepions=False)
-        self.request = dict(city=None, count_hotels=0, photos=None, count_photo=0, price_from=0, price_to=0, distance_from_center=0)
+        self.request = dict(city=None, count_hotels=0, photos=False, count_photo=0, price_from='None', price_to='None', distance_from_center=0)
+        self.class_name_dict = {
+            'LowPrice': ('Введите кол-во отелей', self.get_count),
+            'HighPrice': ('Введите кол-во отелей', self.get_count),
+            'BestDeal': ('Введите диапозон цен через пробел', self.get_price)
+        }
 
     def __call__(self, message: Message, class_name) -> str:
         """Метод позволяет экземпляру класса вести себя как функция
@@ -79,8 +84,31 @@ class HotelRequest(TeleBot):
             message: Message
         """
         self.request['city'] = message.text
-        self.send_message(message.from_user.id, 'Введите кол-во отелей')
-        self.register_next_step_handler(message, self.get_count)
+        self.send_message(message.from_user.id, self.class_name_dict.get(self.class_name.__name__)[0])
+        self.register_next_step_handler(message, self.class_name_dict.get(self.class_name.__name__)[1])
+
+    def get_price(self, message: Message) -> None:
+        try:
+            self.request['price_from'], self.request['price_to'] = message.text.split()
+        except ValueError:
+            pass
+
+        if not (self.request.get('price_from').isalpha() and self.request.get('price_to').isalpha()):
+            self.send_message(message.from_user.id, 'Введите расстояние от центра')
+            self.register_next_step_handler(message, self.get_distance)
+        else:
+            self.send_message(message.from_user.id, 'Введите два числа через пробел')
+            self.register_next_step_handler(message, self.get_price)
+
+    def get_distance(self, message):
+        self.request['distance_from_center'] = message.text
+        if not self.request.get('distance_from_center', '').isalpha():
+            self.request['distance_from_center'] = int(self.request['distance_from_center'])
+            self.send_message(message.from_user.id, 'Введите кол-во отелей')
+            self.register_next_step_handler(message, self.get_count)
+        else:
+            self.send_message(message.from_user.id, 'Введите цифру')
+            self.register_next_step_handler(message, self.get_distance)
 
     def get_count(self, message: Message) -> None:
         """Аналогично методу get_city"""
@@ -88,25 +116,19 @@ class HotelRequest(TeleBot):
             self.request['count_hotels'] = int(message.text)
             keyboard = KeyboardYesNo()
             self.send_message(message.from_user.id, text='Показать фото? (yes/no)', reply_markup=keyboard)
-
-            @self.callback_query_handler(func=lambda call: True)
-            def callback_worker(call):
-                message.text = call.data
-
-            self.get_photo(message)
         else:
             self.send_message(message.from_user.id, 'Введите цифру')
             self.register_next_step_handler(message, self.get_count)
 
-    def get_photo(self, message: Message) -> None:
+    def get_photo(self, call) -> None:
         """Аналогично методу get_city"""
-        if message.text == 'yes':
-            self.request['photo'] = True
-            self.send_message(message.from_user.id, 'Сколько вы хотите фото?')
-            self.register_next_step_handler(message, self.get_response)
+        if self.request['photos'] == 'yes':
+            self.request['photos'] = True
+            self.send_message(call.message.chat.id, 'Сколько вы хотите фото?')
+            self.register_next_step_handler(call.message, self.get_response)
         else:
-            self.request['photo'] = False
-            self.get_response(message)
+            self.request['photos'] = False
+            self.get_response(call.message)
 
     def get_response(self, message: Message) -> None:
         """Метод принимпет ответ от пользователя,
@@ -116,16 +138,16 @@ class HotelRequest(TeleBot):
         Args:
             message: Message
         """
-        if not message.text.lstrip('/').isalpha() or message.text == 'no':
-            self.request['count_photo'] = message.text if not message.text.isalpha() else 0
+        if not message.text.lstrip('/').isalpha():
+            self.request['count_photo'] = message.text if self.request['photos'] else 0
             try:
                 with self.class_name(request_data=self.request) as response:
-                    for response_i in response(message, count_photo=int(self.request['count_photo']), get_photo=self.request['photo']):
-                        self.send_message(message.from_user.id, response_i)
+                    for response_i in response(count_photo=int(self.request['count_photo']), get_photo=self.request['photos']):
+                        self.send_message(message.chat.id, response_i)
             except StopIteration as err:
-                self.send_message(message.from_user.id, str(err))
+                self.send_message(message.chat.id, str(err))
         else:
-            self.send_message(message.from_user.id, 'Введите цифру')
+            self.send_message(message.chat.id, 'Введите цифру')
             self.register_next_step_handler(message, self.get_response)
 
 
@@ -142,11 +164,10 @@ class HotelsResponse:
         self.url_2: str = 'https://hotels4.p.rapidapi.com/properties/list'
         self.url_3: str = 'https://hotels4.p.rapidapi.com/properties/get-hotel-photos'
 
-    def __call__(self, message: Message, count_photo: int, get_photo: bool) -> Union[List, str]:
+    def __call__(self, count_photo: int, get_photo: bool) -> Union[List, str]:
         """Метод принимает сообщение от пользователя,
         делает запрос к API и возращает ответ.
         Args:
-            message: Message
             get_photo=False: bool
         """
         if self.make_query(count_photo, get_photo):
@@ -178,7 +199,6 @@ class HotelsResponse:
             'query': self.request_data['city'],
             'locale': 'en_US',
         }
-
         return get_hotels_data(
             self.url_1, query_city_id
         ).get('suggestions', {})[0].get('entities', {})[0].get('destinationId')

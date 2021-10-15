@@ -20,5 +20,9 @@ if __name__ == '__main__':
         else:
             bot.send_message(message.from_user.id, 'Комманда не найдена, посмотрите список доступных команд в /help .')
 
+    @bot.callback_query_handler(func=lambda call: True)
+    def callback_worker(call):
+        bot.request['photos'] = call.data
+        bot.get_photo(call)
 
     bot.polling(none_stop=True, interval=0)

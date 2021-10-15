@@ -2,6 +2,7 @@ import help_user
 import hello
 import lowprice
 import highprice
+import bestdeal
 from typing import Dict
 
 other_commands: Dict = {
@@ -13,4 +14,5 @@ other_commands: Dict = {
 commands: Dict = {
     r'/lowprice': lowprice.LowPrice,
     r'/highprice': highprice.HighPrice,
+    r'/bestdeal': bestdeal.BestDeal,
 }
