@@ -1,10 +1,12 @@
 import json
 import requests
-from typing import Dict, Callable, Optional, Union, List
 import functools
+import os
+from datetime import datetime
+from typing import Dict, Callable, Optional, Union, List
 from telebot.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from telebot import TeleBot
-import os
+from models import History
 
 
 def get_hotels_data(url: str, querystring: Dict) -> Dict:
@@ -32,6 +34,19 @@ def check_error_request(func: Callable) -> Callable:
             result = func(*args, **kwargs)
         except KeyError:
             return None
+        return result
+    return wrapper
+
+
+def write_history(func: Callable) -> Callable:
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        result = func(*args, **kwargs)
+        command = '/' + args[0].__class__.__name__.lower()
+        date = datetime.now()
+        hotels = ', '.join([data['name'] for data in result])
+        with History() as table:
+            table.create(command=command, date=date, hotels=hotels).save()
         return result
     return wrapper
 
@@ -173,13 +188,13 @@ class HotelsResponse:
         response = self.make_query(count_photo=count_photo, get_photo=get_photo)
         if response:
             data_response = []
-            for i in response:
+            for data in response:
                 response_i = 'Название: {}.\nАдрес: {}.\nРасстояние от центра: {}\nЦена: {}\nФото: {}'.format(
-                    i.get('name'),
-                    i.get('address'),
-                    i.get('distance_from_center'),
-                    i.get('price'),
-                    '\n'.join(i.get('photos')),
+                    data.get('name'),
+                    data.get('address'),
+                    data.get('distance_from_center'),
+                    data.get('price'),
+                    '\n'.join(data.get('photos')),
                 )
                 data_response.append(str(response_i))
             return data_response
@@ -193,18 +208,8 @@ class HotelsResponse:
         if exc_type is StopIteration:
             raise exc_val
 
-    def make_query_city_id(self) -> Optional:
-        """Метод возращает id города,
-        иначе вернет None."""
-        query_city_id = {
-            'query': self.request_data['city'],
-            'locale': 'en_US',
-        }
-        return get_hotels_data(
-            self.url_1, query_city_id
-        ).get('suggestions', {})[0].get('entities', {})[0].get('destinationId')
-
     @check_error_request
+    @write_history
     def make_query(self, query: dict = None, count_photo: int = 0, get_photo: bool = True, reverse: bool = False) -> Optional:
         """Метод возращает результат запроса пользователя,
         иначе вернет None.
@@ -227,6 +232,17 @@ class HotelsResponse:
              } for hotel in get_hotels_data(self.url_2, query)['data']['body']['searchResults']['results']
             if hotel['address']['locality'] == self.request_data.get('city', '').title()
         ][-int(self.request_data.get('count_hotels', 0)) if reverse else None:int(self.request_data.get('count_hotels', 0)) if not reverse else None]
+
+    def make_query_city_id(self) -> Optional:
+        """Метод возращает id города,
+        иначе вернет None."""
+        query_city_id = {
+            'query': self.request_data['city'],
+            'locale': 'en_US',
+        }
+        return get_hotels_data(
+            self.url_1, query_city_id
+        ).get('suggestions', {})[0].get('entities', {})[0].get('destinationId')
 
 
 class KeyboardYesNo(InlineKeyboardMarkup):
