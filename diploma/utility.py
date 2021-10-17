@@ -17,7 +17,7 @@ def get_hotels_data(url: str, querystring: Dict) -> Dict:
     """
     headers = {
         'x-rapidapi-host': "hotels4.p.rapidapi.com",
-        'x-rapidapi-key': "861d1751ecmsh2445a4083c02a1cp1daa7fjsn9b0cc18bb5e1",
+        'x-rapidapi-key': "243a337ce9msh4268ead14c90156p1fde51jsn6af4383f6bbd",
     }
     response = requests.request('GET', url, headers=headers, params=querystring, timeout=10)
     return json.loads(response.text)
@@ -170,9 +170,10 @@ class HotelsResponse:
         Args:
             get_photo=False: bool
         """
-        if self.make_query(count_photo, get_photo):
-            response = []
-            for i in self.make_query(count_photo=count_photo, get_photo=get_photo):
+        response = self.make_query(count_photo=count_photo, get_photo=get_photo)
+        if response:
+            data_response = []
+            for i in response:
                 response_i = 'Название: {}.\nАдрес: {}.\nРасстояние от центра: {}\nЦена: {}\nФото: {}'.format(
                     i.get('name'),
                     i.get('address'),
@@ -180,8 +181,8 @@ class HotelsResponse:
                     i.get('price'),
                     '\n'.join(i.get('photos')),
                 )
-                response.append(str(response_i))
-            return response
+                data_response.append(str(response_i))
+            return data_response
         else:
             raise StopIteration('Вы ввели неправильно данные для запроса.')
 
@@ -204,17 +205,16 @@ class HotelsResponse:
         ).get('suggestions', {})[0].get('entities', {})[0].get('destinationId')
 
     @check_error_request
-    def make_query(self, count_photo: int = 0, get_photo: bool = True, reverse: bool = False) -> Optional:
+    def make_query(self, query: dict = None, count_photo: int = 0, get_photo: bool = True, reverse: bool = False) -> Optional:
         """Метод возращает результат запроса пользователя,
         иначе вернет None.
 
         Args:
+            query: dict = None
             count_photo: int = 0
             get_photo: bool = False
             reverse: bool = False
         """
-        query = {'destinationId': self.make_query_city_id(), 'sortOrder': 'PRICE',
-                 'locale': 'en_US', 'currency': 'USD'}
         return [
             {'name': hotel['name'],
              'id': hotel['id'],
