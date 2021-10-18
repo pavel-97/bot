@@ -22,6 +22,9 @@ if __name__ == '__main__':
 
     @bot.callback_query_handler(func=lambda call: True)
     def callback_worker(call):
+        """Функция принимает событие
+        при нажатии на кнопку формы, извлекает
+        данные и отправляет их другой функции."""
         bot.request['photos'] = call.data
         bot.get_photo(call)
 

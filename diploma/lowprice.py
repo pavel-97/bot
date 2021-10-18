@@ -1,11 +1,10 @@
-from utility import HotelsResponse, check_error_request
+from utility import HotelsResponse
 from typing import Optional
 
 
 class LowPrice(HotelsResponse):
     """Класс LowPrice, наследник класса HotelsResponse."""
-    @check_error_request
-    def make_query(self, count_photo: int = 0, get_photo: bool = True, reverse: bool = False) -> Optional:
+    def make_query(self, query: dict = None, count_photo: int = 0, get_photo: bool = True, reverse: bool = False) -> Optional:
         """Метод изменяет поведения при передачи в него аргументов.
         Args:
             count_photo = 0: int

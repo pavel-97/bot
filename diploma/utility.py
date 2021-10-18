@@ -19,10 +19,13 @@ def get_hotels_data(url: str, querystring: Dict) -> Dict:
     """
     headers = {
         'x-rapidapi-host': "hotels4.p.rapidapi.com",
-        'x-rapidapi-key': "243a337ce9msh4268ead14c90156p1fde51jsn6af4383f6bbd",
+        'x-rapidapi-key': os.environ.get('RapidapiKey'),
     }
-    response = requests.request('GET', url, headers=headers, params=querystring, timeout=10)
-    return json.loads(response.text)
+    try:
+        response = requests.request('GET', url, headers=headers, params=querystring, timeout=10)
+        return json.loads(response.text)
+    except requests.exceptions.ReadTimeout:
+        raise requests.exceptions.ReadTimeout('Время ожидания сервера истекло')
 
 
 def check_error_request(func: Callable) -> Callable:
@@ -32,21 +35,23 @@ def check_error_request(func: Callable) -> Callable:
     def wrapper(*args, **kwargs):
         try:
             result = func(*args, **kwargs)
-        except KeyError:
+        except json.decoder.JSONDecodeError:
             return None
         return result
     return wrapper
 
 
 def write_history(func: Callable) -> Callable:
+    """Функция декоратор. Записывает результат
+    декорируемой функции в базу данных."""
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         result = func(*args, **kwargs)
         command = '/' + args[0].__class__.__name__.lower()
-        date = datetime.now()
+        date = datetime.now().ctime()
         hotels = ', '.join([data['name'] for data in result])
         with History() as table:
-            table.create(command=command, date=date, hotels=hotels).save()
+            table.create(command=command, date=date, hotels=hotels)
         return result
     return wrapper
 
@@ -103,6 +108,7 @@ class HotelRequest(TeleBot):
         self.register_next_step_handler(message, self.class_name_dict.get(self.class_name.__name__)[1])
 
     def get_price(self, message: Message) -> None:
+        """Аналогично методу get_city"""
         try:
             self.request['price_from'], self.request['price_to'] = message.text.split()
         except ValueError:
@@ -116,6 +122,7 @@ class HotelRequest(TeleBot):
             self.register_next_step_handler(message, self.get_price)
 
     def get_distance(self, message):
+        """Аналогично методу get_city"""
         self.request['distance_from_center'] = message.text
         if not self.request.get('distance_from_center', '').isalpha():
             self.request['distance_from_center'] = int(self.request['distance_from_center'])
@@ -159,7 +166,7 @@ class HotelRequest(TeleBot):
                 with self.class_name(request_data=self.request) as response:
                     for response_i in response(count_photo=int(self.request['count_photo']), get_photo=self.request['photos']):
                         self.send_message(message.chat.id, response_i)
-            except StopIteration as err:
+            except (StopIteration, requests.exceptions.ReadTimeout) as err:
                 self.send_message(message.chat.id, str(err))
         else:
             self.send_message(message.chat.id, 'Введите цифру')
@@ -230,7 +237,6 @@ class HotelsResponse:
                            photo['baseUrl'].format(size='z') for photo in get_hotels_data(self.url_3, {'id': hotel['id']})['hotelImages']
                        ][:count_photo] if get_photo else ['no photo', ],
              } for hotel in get_hotels_data(self.url_2, query)['data']['body']['searchResults']['results']
-            if hotel['address']['locality'] == self.request_data.get('city', '').title()
         ][-int(self.request_data.get('count_hotels', 0)) if reverse else None:int(self.request_data.get('count_hotels', 0)) if not reverse else None]
 
     def make_query_city_id(self) -> Optional:
@@ -240,9 +246,8 @@ class HotelsResponse:
             'query': self.request_data['city'],
             'locale': 'en_US',
         }
-        return get_hotels_data(
-            self.url_1, query_city_id
-        ).get('suggestions', {})[0].get('entities', {})[0].get('destinationId')
+        response = get_hotels_data(self.url_1, query_city_id).get('suggestions', {})[0].get('entities', {})
+        return response[0].get('destinationId') if response else None
 
 
 class KeyboardYesNo(InlineKeyboardMarkup):
