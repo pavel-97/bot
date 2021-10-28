@@ -2,11 +2,13 @@ import json
 import requests
 import functools
 import os
+import re
 from datetime import datetime
-from typing import Dict, Callable, Optional, Union, List
+from typing import Dict, Callable, Union, List
 from telebot.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from telebot import TeleBot
-from models import History
+from telebot_calendar import Calendar, RUSSIAN_LANGUAGE, CallbackData
+from models import History, db
 
 
 def get_hotels_data(url: str, querystring: Dict) -> Dict:
@@ -19,23 +21,26 @@ def get_hotels_data(url: str, querystring: Dict) -> Dict:
     """
     headers = {
         'x-rapidapi-host': "hotels4.p.rapidapi.com",
-        'x-rapidapi-key': os.environ.get('RapidapiKey'),
+        'x-rapidapi-key': os.getenv('RapidapiKey'),
     }
     try:
         response = requests.request('GET', url, headers=headers, params=querystring, timeout=10)
-        return json.loads(response.text)
+        if 199 < int(response.status_code) < 300:
+            return json.loads(response.text)
+        else:
+            raise requests.exceptions.HTTPError(response.status_code)
     except requests.exceptions.ReadTimeout:
         raise requests.exceptions.ReadTimeout('Время ожидания сервера истекло')
 
 
 def check_error_request(func: Callable) -> Callable:
     """Функция декоратор. Изменяет поведение декорируемой функции,
-    есди возникает искючение KeyError."""
+    есди возникает искючение JSONDecodeError, KeyError."""
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         try:
             result = func(*args, **kwargs)
-        except json.decoder.JSONDecodeError:
+        except (json.decoder.JSONDecodeError, KeyError):
             return None
         return result
     return wrapper
@@ -50,8 +55,9 @@ def write_history(func: Callable) -> Callable:
         command = '/' + args[0].__class__.__name__.lower()
         date = datetime.now().ctime()
         hotels = ', '.join([data['name'] for data in result])
-        with History() as table:
-            table.create(command=command, date=date, hotels=hotels)
+        user_id = args[0].request_data.user_id
+        with db:
+            History.create(command=command, date=date, hotels=hotels, user_id=user_id)
         return result
     return wrapper
 
@@ -59,8 +65,8 @@ def write_history(func: Callable) -> Callable:
 class HotelRequest(TeleBot):
     """Класс HotelRequest. Наследник класс TeleBot.
     Конструктор класс инициализирует экзэмпляры класс."""
-    def __init__(self) -> None:
-        super().__init__(token=os.environ.get('TOKEN'),
+    def __init__(self, token) -> None:
+        super().__init__(token=token,
                          parse_mode=None, threaded=True,
                          skip_pending=False,
                          num_threads=2,
@@ -69,7 +75,10 @@ class HotelRequest(TeleBot):
                          exception_handler=None,
                          last_update_id=0,
                          suppress_middleware_excepions=False)
-        self.request = dict(city=None, count_hotels=0, photos=False, count_photo=0, price_from='None', price_to='None', distance_from_center=0)
+        self.request = None
+        self.suggestions = None
+        self.calendar = None
+        self.callback_data_calendar = CallbackData('None', 'None', 'None', 'None', 'None')
         self.class_name_dict = {
             'LowPrice': ('Введите кол-во отелей', self.get_count),
             'HighPrice': ('Введите кол-во отелей', self.get_count),
@@ -84,8 +93,9 @@ class HotelRequest(TeleBot):
             class_name
         """
         self.class_name = class_name
+        self.request = User(message.chat.id)
         self.start(message)
-        return 'Введите название города на аглийском языке'
+        return 'Введите название города'
 
     def start(self, message: Message) -> None:
         """Метод ожидает ответ от пользователя и
@@ -93,49 +103,57 @@ class HotelRequest(TeleBot):
         Args:
             message: Message
         """
-        self.register_next_step_handler(message, self.get_city)
+        self.register_next_step_handler(message, self.get_suggestions)
 
-    def get_city(self, message: Message) -> None:
+    def get_suggestions(self, message: Message) -> None:
+        """Метод запрашивет у API список городо,
+        котрые подойдут для пользователя, отправляет инпуты с этими городами
+        и ожидает подтверждение выбранного города от пользователя."""
+        try:
+            self.suggestions = self.class_name.make_suggestions(message)
+            keyboard = KeyboardSuggestion(self.suggestions)
+            self.send_message(message.chat.id, text='Уточните город' if self.suggestions else 'Уточните правильное название города', reply_markup=keyboard)
+        except (requests.exceptions.ReadTimeout, requests.exceptions.HTTPError) as err:
+            self.send_message(message.chat.id, text=str(err))
+
+    def get_city(self, call) -> None:
         """Метод принимает ответ от пользователя,
         записывает данные в словарь, отправляет сообщение
         пользователю и ожидает ответ, после передает поток
         управления другому методу.
         Args:
-            message: Message
+            call
         """
-        self.request['city'] = message.text
-        self.send_message(message.from_user.id, self.class_name_dict.get(self.class_name.__name__)[0])
-        self.register_next_step_handler(message, self.class_name_dict.get(self.class_name.__name__)[1])
+        self.request.city_id = call.data
+        self.send_message(call.message.chat.id, self.class_name_dict.get(self.class_name.__name__)[0])
+        self.register_next_step_handler(call.message, self.class_name_dict.get(self.class_name.__name__)[1])
 
     def get_price(self, message: Message) -> None:
         """Аналогично методу get_city"""
         try:
-            self.request['price_from'], self.request['price_to'] = message.text.split()
-        except ValueError:
-            pass
-
-        if not (self.request.get('price_from').isalpha() and self.request.get('price_to').isalpha()):
-            self.send_message(message.from_user.id, 'Введите расстояние от центра')
+            self.request.price_from, self.request.price_to = re.findall(r'\b[\d]+', message.text)
+            self.send_message(message.from_user.id, 'Введите расстояние от центра по примеру: 3 миль')
             self.register_next_step_handler(message, self.get_distance)
-        else:
+
+        except ValueError:
             self.send_message(message.from_user.id, 'Введите два числа через пробел')
             self.register_next_step_handler(message, self.get_price)
 
-    def get_distance(self, message):
+    def get_distance(self, message: Message) -> None:
         """Аналогично методу get_city"""
-        self.request['distance_from_center'] = message.text
-        if not self.request.get('distance_from_center', '').isalpha():
-            self.request['distance_from_center'] = int(self.request['distance_from_center'])
+        try:
+            self.request.distance_from_center = re.findall(r'\b[\d]+', re.findall(r'\b[\d]+\sмиль', message.text)[0])[0]
+            self.request.distance_from_center = int(self.request.distance_from_center)
             self.send_message(message.from_user.id, 'Введите кол-во отелей')
             self.register_next_step_handler(message, self.get_count)
-        else:
+        except (TypeError, IndexError):
             self.send_message(message.from_user.id, 'Введите цифру')
             self.register_next_step_handler(message, self.get_distance)
 
     def get_count(self, message: Message) -> None:
         """Аналогично методу get_city"""
         if not message.text.isalpha():
-            self.request['count_hotels'] = int(message.text)
+            self.request.count_hotels = int(message.text)
             keyboard = KeyboardYesNo()
             self.send_message(message.from_user.id, text='Показать фото? (yes/no)', reply_markup=keyboard)
         else:
@@ -144,33 +162,46 @@ class HotelRequest(TeleBot):
 
     def get_photo(self, call) -> None:
         """Аналогично методу get_city"""
-        if self.request['photos'] == 'yes':
-            self.request['photos'] = True
+        self.request.photos = call.data
+        if self.request.photos == 'yes':
+            self.request.photos = True
             self.send_message(call.message.chat.id, 'Сколько вы хотите фото?')
-            self.register_next_step_handler(call.message, self.get_response)
+            self.register_next_step_handler(call.message, self.get_count_photo)
         else:
-            self.request['photos'] = False
-            self.get_response(call.message)
+            self.request.photos = False
+            self.get_date(call.message)
 
-    def get_response(self, message: Message) -> None:
+    def get_count_photo(self, message: Message) -> None:
+        if not message.text.lstrip('/').isalpha():
+            self.request.count_photo = message.text
+            self.get_date(message)
+        else:
+            self.send_message(message.chat.id, 'Введите цифру')
+            self.register_next_step_handler(message, self.get_count_photo)
+
+    def get_date(self, message: Message, date=datetime.now()) -> None:
+        self.calendar = KeyboardCalendar(language=RUSSIAN_LANGUAGE)
+        self.callback_data_calendar = CallbackData('calender', 'action', 'year', 'month', 'day')
+        self.send_message(message.chat.id, text='Выберите дату.', reply_markup=self.calendar.create_calendar(
+            name=self.callback_data_calendar.prefix,
+            year=date.year,
+            month=date.month
+        ))
+
+    def get_response(self, call) -> None:
         """Метод принимпет ответ от пользователя,
         формирует запрос к API в соответствии с
         требованиями пользователя, получает ответ и
         отправляет его пользователю.
         Args:
-            message: Message
+            call
         """
-        if not message.text.lstrip('/').isalpha():
-            self.request['count_photo'] = message.text if self.request['photos'] else 0
-            try:
-                with self.class_name(request_data=self.request) as response:
-                    for response_i in response(count_photo=int(self.request['count_photo']), get_photo=self.request['photos']):
-                        self.send_message(message.chat.id, response_i)
-            except (StopIteration, requests.exceptions.ReadTimeout) as err:
-                self.send_message(message.chat.id, str(err))
-        else:
-            self.send_message(message.chat.id, 'Введите цифру')
-            self.register_next_step_handler(message, self.get_response)
+        try:
+            with self.class_name(request_data=self.request) as response:
+                for response_i in response(count_photo=int(self.request.count_photo), get_photo=self.request.photos):
+                    self.send_message(call.message.chat.id, response_i)
+        except (StopIteration, requests.exceptions.ReadTimeout, requests.exceptions.HTTPError) as err:
+            self.send_message(call.message.chat.id, str(err))
 
 
 class HotelsResponse:
@@ -180,13 +211,14 @@ class HotelsResponse:
     Args:
         request_data: Dict
     """
-    def __init__(self, request_data: Dict) -> None:
-        self.request_data = request_data
-        self.url_1: str = 'https://hotels4.p.rapidapi.com/locations/search'
-        self.url_2: str = 'https://hotels4.p.rapidapi.com/properties/list'
-        self.url_3: str = 'https://hotels4.p.rapidapi.com/properties/get-hotel-photos'
+    url_1: str = 'https://hotels4.p.rapidapi.com/locations/search'
+    url_2: str = 'https://hotels4.p.rapidapi.com/properties/list'
+    url_3: str = 'https://hotels4.p.rapidapi.com/properties/get-hotel-photos'
 
-    def __call__(self, count_photo: int, get_photo: bool) -> Union[List, str]:
+    def __init__(self, request_data: 'User') -> None:
+        self.request_data = request_data
+
+    def __call__(self, count_photo: int, get_photo: bool) -> List[str]:
         """Метод принимает сообщение от пользователя,
         делает запрос к API и возращает ответ.
         Args:
@@ -217,9 +249,8 @@ class HotelsResponse:
 
     @check_error_request
     @write_history
-    def make_query(self, query: dict = None, count_photo: int = 0, get_photo: bool = True, reverse: bool = False) -> Optional:
-        """Метод возращает результат запроса пользователя,
-        иначе вернет None.
+    def make_query(self, query: dict = None, count_photo: int = 0, get_photo: bool = True, reverse: bool = False) -> List[Dict[str, Union[str, list[str]]]]:
+        """Метод возращает результат запроса пользователя.
 
         Args:
             query: dict = None
@@ -227,27 +258,61 @@ class HotelsResponse:
             get_photo: bool = False
             reverse: bool = False
         """
+        response = get_hotels_data(self.url_2, query)['data']['body']['searchResults']['results']
         return [
-            {'name': hotel['name'],
-             'id': hotel['id'],
-             'address': hotel['address']['streetAddress'],
-             'distance_from_center': hotel['landmarks'][0]['distance'],
-             'price': hotel['ratePlan']['price']['current'],
-             'photos': [
-                           photo['baseUrl'].format(size='z') for photo in get_hotels_data(self.url_3, {'id': hotel['id']})['hotelImages']
-                       ][:count_photo] if get_photo else ['no photo', ],
-             } for hotel in get_hotels_data(self.url_2, query)['data']['body']['searchResults']['results']
-        ][-int(self.request_data.get('count_hotels', 0)) if reverse else None:int(self.request_data.get('count_hotels', 0)) if not reverse else None]
+                   {'name': hotel['name'],
+                    'id': hotel['id'],
+                    'address': hotel['address'].get('streetAddress'),
+                    'distance_from_center': hotel['landmarks'][0]['distance'],
+                    'price': hotel['ratePlan']['price']['current'],
+                    'photos': [photo['baseUrl'].format(size='z')
+                               for photo in get_hotels_data(self.url_3, {'id': hotel['id']})
+                                    ['hotelImages']
+                               ]
+                    [:count_photo] if get_photo else ['no photo', ],
+                    }
+                   for hotel in response
+            ]
 
-    def make_query_city_id(self) -> Optional:
-        """Метод возращает id города,
-        иначе вернет None."""
-        query_city_id = {
-            'query': self.request_data['city'],
-            'locale': 'en_US',
+    @classmethod
+    def make_suggestions(cls, message: Message) -> Dict[str, str]:
+        """Метод класса. Возращает список
+        для пользователя."""
+        cls.url_1 = "https://hotels4.p.rapidapi.com/locations/search"
+        query = {
+            'query': message.text,
+            'locale': 'ru_RU',
         }
-        response = get_hotels_data(self.url_1, query_city_id).get('suggestions', {})[0].get('entities', {})
-        return response[0].get('destinationId') if response else None
+        request = get_hotels_data(cls.url_1, query).get('suggestions')
+        response = {name['destinationId']: name['name'] for suggestion in request for name in suggestion['entities']} \
+            if request\
+            else {}
+        return response
+
+
+class User:
+    def __init__(self, telegram_id: int) -> None:
+        self.city_id = None
+        self.count_hotels = 0
+        self.photos = False
+        self.count_photo = 0
+        self.price_from = 'None'
+        self.price_to = 'None'
+        self.distance_from_center = '0'
+        self.user_id = telegram_id
+        self.dates = {'checkIn': None, 'checkOut': None}
+
+    def __str__(self):
+        return self.user_id
+
+
+class KeyboardSuggestion(InlineKeyboardMarkup):
+    def __init__(self, cities_data: dict) -> None:
+        super().__init__()
+        for id_city in cities_data:
+            self.add(InlineKeyboardButton(text=cities_data.get(id_city, 'None'), callback_data=str(
+                {'data': id_city, 'method': 'get_city'}
+            ).replace("'", '"')))
 
 
 class KeyboardYesNo(InlineKeyboardMarkup):
@@ -255,5 +320,14 @@ class KeyboardYesNo(InlineKeyboardMarkup):
     Предоставляет готовую клавиатуру для пользователя."""
     def __init__(self):
         super().__init__()
-        self.add(InlineKeyboardButton(text='yes', callback_data='yes'))
-        self.add(InlineKeyboardButton(text='no', callback_data='no'))
+        self.add(InlineKeyboardButton(text='yes', callback_data=str(
+            {'data': 'yes', 'method': 'get_photo'}
+        ).replace("'", '"')))
+        self.add(InlineKeyboardButton(text='no', callback_data=str(
+            {'data': 'no', 'method': 'get_photo'}
+        ).replace("'", '"')))
+
+
+class KeyboardCalendar(Calendar):
+    def __init__(self, language):
+        super().__init__(language=language)
