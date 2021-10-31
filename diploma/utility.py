@@ -5,7 +5,7 @@ import os
 import re
 from datetime import datetime
 from typing import Dict, Callable, Union, List
-from telebot.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
+from telebot.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, InputMediaDocument
 from telebot import TeleBot
 from telebot_calendar import Calendar, RUSSIAN_LANGUAGE, CallbackData
 from models import History, db
@@ -28,7 +28,7 @@ def get_hotels_data(url: str, querystring: Dict) -> Dict:
         if 199 < int(response.status_code) < 300:
             return json.loads(response.text)
         else:
-            raise requests.exceptions.HTTPError(response.status_code)
+            raise requests.exceptions.HTTPError('Ошибка {}'.format(response.status_code))
     except requests.exceptions.ReadTimeout:
         raise requests.exceptions.ReadTimeout('Время ожидания сервера истекло')
 
@@ -198,8 +198,10 @@ class HotelRequest(TeleBot):
         """
         try:
             with self.class_name(request_data=self.request) as response:
-                for response_i in response(count_photo=int(self.request.count_photo), get_photo=self.request.photos):
+                for response_i, photos_i in response(count_photo=int(self.request.count_photo), get_photo=self.request.photos):
                     self.send_message(call.message.chat.id, response_i)
+                    if photos_i:
+                        self.send_media_group(chat_id=call.message.chat.id, media=photos_i)
         except (StopIteration, requests.exceptions.ReadTimeout, requests.exceptions.HTTPError) as err:
             self.send_message(call.message.chat.id, str(err))
 
@@ -218,7 +220,7 @@ class HotelsResponse:
     def __init__(self, request_data: 'User') -> None:
         self.request_data = request_data
 
-    def __call__(self, count_photo: int, get_photo: bool) -> List[str]:
+    def __call__(self, count_photo: int, get_photo: bool) -> List[List[str, InputMediaDocument]]:
         """Метод принимает сообщение от пользователя,
         делает запрос к API и возращает ответ.
         Args:
@@ -228,14 +230,14 @@ class HotelsResponse:
         if response:
             data_response = []
             for data in response:
-                response_i = 'Название: {}.\nАдрес: {}.\nРасстояние от центра: {}\nЦена: {}\nФото: {}'.format(
+                response_i = 'Название: {}.\nАдрес: {}.\nРасстояние от центра: {}\nЦена: {}'.format(
                     data.get('name'),
                     data.get('address'),
                     data.get('distance_from_center'),
                     data.get('price'),
-                    '\n'.join(data.get('photos')),
                 )
-                data_response.append(str(response_i))
+                photos = [InputMediaDocument(media=link) for link in data.get('photos')] if get_photo else None
+                data_response.append([str(response_i), photos])
             return data_response
         else:
             raise StopIteration('Вы ввели неправильно данные для запроса.')
