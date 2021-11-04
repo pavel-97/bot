@@ -32,6 +32,9 @@ if __name__ == '__main__':
             day_start = bot.request.dates['checkIn']
             date = [int(year), int(month), int(day)]
             bot.request.dates['checkIn' if day_start is None else 'checkOut'] = datetime.date(*date).strftime('%Y-%m-%d')
+            bot.delete_message(call.message.chat.id, call.message.message_id)
+            if not bot.request.dates.get('checkOut'):
+                bot.get_date(call.message)
 
         elif action == 'NEXT-MONTH':
             date = datetime.date(year=int(year), month=int(month), day=1) + relativedelta.relativedelta(months=1)

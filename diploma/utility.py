@@ -173,7 +173,7 @@ class HotelRequest(TeleBot):
 
     def get_count_photo(self, message: Message) -> None:
         if not message.text.lstrip('/').isalpha():
-            self.request.count_photo = message.text
+            self.request.count_photo = message.text if int(message.text) <= 5 else 5
             self.get_date(message)
         else:
             self.send_message(message.chat.id, 'Введите цифру')
@@ -182,7 +182,14 @@ class HotelRequest(TeleBot):
     def get_date(self, message: Message, date=datetime.now()) -> None:
         self.calendar = KeyboardCalendar(language=RUSSIAN_LANGUAGE)
         self.callback_data_calendar = CallbackData('calender', 'action', 'year', 'month', 'day')
-        self.send_message(message.chat.id, text='Выберите дату.', reply_markup=self.calendar.create_calendar(
+        dict_text = {
+            'checkIn': 'Выберите дату заселения.',
+            'checkOut': 'Выберите дату выселения (дата заселения: {}).'.format(
+                self.request.dates.get('checkIn')
+            ),
+        }
+        key_text = 'checkOut' if self.request.dates.get('checkIn') is not None else 'checkIn'
+        self.send_message(message.chat.id, text=dict_text.get(key_text), reply_markup=self.calendar.create_calendar(
             name=self.callback_data_calendar.prefix,
             year=date.year,
             month=date.month
@@ -220,7 +227,7 @@ class HotelsResponse:
     def __init__(self, request_data: 'User') -> None:
         self.request_data = request_data
 
-    def __call__(self, count_photo: int, get_photo: bool) -> List[List[str, InputMediaDocument]]:
+    def __call__(self, count_photo: int, get_photo: bool) -> List[List[Union[str, List[InputMediaDocument], None]]]:
         """Метод принимает сообщение от пользователя,
         делает запрос к API и возращает ответ.
         Args:

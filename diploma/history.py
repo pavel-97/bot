@@ -6,8 +6,9 @@ def history(message):
     Извлекает данные и отправляет их
     пользователю."""
     results = []
-    for row in History.select().where(History.user_id == message.chat.id):
-        row_i = 'Команда: {}; Дата: {}; Отели: {}.'.format(
+    list_history = History.select().where(History.user_id == message.chat.id)
+    for row in list_history[None if len(list_history) <= 5 else -5:]:
+        row_i = 'Команда: {}; Дата: {}; Отели: {}.\n'.format(
             row.command,
             row.date,
             row.hotels
