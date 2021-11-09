@@ -3,6 +3,7 @@ import requests
 import functools
 import os
 import re
+import logging
 from datetime import datetime
 from typing import Dict, Callable, Union, List
 from telebot.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, InputMediaDocument
@@ -27,6 +28,8 @@ def get_hotels_data(url: str, querystring: Dict) -> Dict:
         response = requests.request('GET', url, headers=headers, params=querystring, timeout=10)
         if 199 < int(response.status_code) < 300:
             return json.loads(response.text)
+        elif re.findall(r'You have exceeded the MONTHLY quota for Requests on your current plan, BASIC.', json.loads(response.text).get('message')):
+            raise requests.exceptions.HTTPError(json.loads(response.text).get('message'))
         else:
             raise requests.exceptions.HTTPError('Ошибка {}'.format(response.status_code))
     except requests.exceptions.ReadTimeout:
@@ -210,6 +213,10 @@ class HotelRequest(TeleBot):
                     if photos_i:
                         self.send_media_group(chat_id=call.message.chat.id, media=photos_i)
         except (StopIteration, requests.exceptions.ReadTimeout, requests.exceptions.HTTPError) as err:
+            logging.exception('{}'.format(
+
+                datetime.now().strftime('%Y-$m-%d %H:%M:%S')
+            ), exc_info=True)
             self.send_message(call.message.chat.id, str(err))
 
 
@@ -284,6 +291,7 @@ class HotelsResponse:
             ]
 
     @classmethod
+    @check_error_request
     def make_suggestions(cls, message: Message) -> Dict[str, str]:
         """Метод класса. Возращает список
         для пользователя."""
