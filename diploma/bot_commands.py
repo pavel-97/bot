@@ -8,13 +8,13 @@ from typing import Dict
 
 other_commands: Dict = {
     'Привет': hello.hello,
-    r'/hello-world': hello.hello,
-    r'/help': help_user.help_user,
-    r'/history': history.history,
+    '/hello-world': hello.hello,
+    '/help': help_user.help_user,
+    '/history': history.history,
 }
 
 commands: Dict = {
-    r'/lowprice': lowprice.LowPrice,
-    r'/highprice': highprice.HighPrice,
-    r'/bestdeal': bestdeal.BestDeal,
+    '/lowprice': lowprice.LowPrice,
+    '/highprice': highprice.HighPrice,
+    '/bestdeal': bestdeal.BestDeal,
 }
