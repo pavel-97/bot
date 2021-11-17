@@ -63,6 +63,4 @@ def callback_worker(call):
         bot.send_message(call.message.chat.id, text='Комманда не найдена, посмотрите список доступных команд в /help .')
 
 
-# bot.polling(none_stop=True, interval=10)
-
-bot.set_webhook(url='https://a69c-37-215-15-113.ngrok.io')
+bot.polling(none_stop=True, interval=3)

@@ -158,7 +158,7 @@ class HotelRequest(TeleBot):
         if not message.text.isalpha():
             self.request.count_hotels = int(message.text)
             keyboard = KeyboardYesNo()
-            self.send_message(message.from_user.id, text='Показать фото? (yes/no)', reply_markup=keyboard)
+            self.send_message(message.from_user.id, text='Показать фото? (да/нет)', reply_markup=keyboard)
         else:
             self.send_message(message.from_user.id, 'Введите цифру')
             self.register_next_step_handler(message, self.get_count)
@@ -166,7 +166,7 @@ class HotelRequest(TeleBot):
     def get_photo(self, call) -> None:
         """Аналогично методу get_city"""
         self.request.photos = call.data
-        if self.request.photos == 'yes':
+        if self.request.photos == 'да':
             self.request.photos = True
             self.send_message(call.message.chat.id, 'Сколько вы хотите фото?')
             self.register_next_step_handler(call.message, self.get_count_photo)
@@ -337,11 +337,11 @@ class KeyboardYesNo(InlineKeyboardMarkup):
     Предоставляет готовую клавиатуру для пользователя."""
     def __init__(self):
         super().__init__()
-        self.add(InlineKeyboardButton(text='yes', callback_data=str(
-            {'data': 'yes', 'method': 'get_photo'}
+        self.add(InlineKeyboardButton(text='да', callback_data=str(
+            {'data': 'да', 'method': 'get_photo'}
         ).replace("'", '"')))
-        self.add(InlineKeyboardButton(text='no', callback_data=str(
-            {'data': 'no', 'method': 'get_photo'}
+        self.add(InlineKeyboardButton(text='нет', callback_data=str(
+            {'data': 'нет', 'method': 'get_photo'}
         ).replace("'", '"')))
 
 
