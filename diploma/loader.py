@@ -2,7 +2,7 @@ from utility import HotelRequest
 from models import History
 from dotenv import load_dotenv
 import os
-import logging
+from loguru import logger
 
 
 BASE_DIR = os.getcwd()
@@ -13,4 +13,4 @@ TOKEN = os.getenv('TOKEN')
 bot = HotelRequest(token=TOKEN)
 History.create_table()
 
-logging.basicConfig(filename='log_file.log', filemode='a+', format='%(name)s - %(levelname)s - %(message)s\n')
+logger.add('log_file.log', format='{time} {level} {message}', level='DEBUG')

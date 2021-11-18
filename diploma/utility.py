@@ -244,9 +244,10 @@ class HotelsResponse:
         if response:
             data_response = []
             for data in response:
-                response_i = 'Название: {}.\nАдрес: {}.\nРасстояние от центра: {}\nЦена: {}'.format(
+                response_i = 'Название: {}.\nАдрес: {}.\nСсылка: https://ru.hotels.com/ho{}\nРасстояние от центра: {}\nЦена: {}'.format(
                     data.get('name'),
                     data.get('address'),
+                    data.get('id'),
                     data.get('distance_from_center'),
                     data.get('price'),
                 )

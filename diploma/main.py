@@ -4,9 +4,11 @@ from dateutil import relativedelta
 from telebot.types import Message
 from bot_commands import commands, other_commands
 from loader import bot
+from loguru import logger
 
 
 @bot.message_handler(content_types=['text'])
+@logger.catch
 def get_text_message(message: Message) -> None:
     """Функция принимает сообщение от пользователя
     и выполняет действие исходя из запроса пользователя.
@@ -24,6 +26,7 @@ def get_text_message(message: Message) -> None:
 
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith(bot.callback_data_calendar.prefix))
+@logger.catch
 def callback_calendar(call):
     name, action, year, month, day = call.data.split(bot.callback_data_calendar.sep)
 
@@ -51,6 +54,7 @@ def callback_calendar(call):
 
 
 @bot.callback_query_handler(func=lambda call: True)
+@logger.catch
 def callback_worker(call):
     """Функция принимает событие
     при нажатии на кнопку формы, извлекает

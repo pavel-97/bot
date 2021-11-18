@@ -1,0 +1,18 @@
+[[source]]
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+pyTelegramBotAPI = "*"
+peewee = "*"
+python-dotenv = "*"
+python-dateutil = "*"
+loguru = "*"
+requests = "*"
+
+[dev-packages]
+peewee = "*"
+
+[requires]
+python_version = "3.9"
