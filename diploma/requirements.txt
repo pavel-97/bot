@@ -1,0 +1,6 @@
+pyTelegramBotAPI
+requests
+peewee
+python-dotenv
+python-dateutil
+loguru
