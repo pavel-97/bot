@@ -13,4 +13,4 @@ TOKEN = os.getenv('TOKEN')
 bot = HotelRequest(token=TOKEN)
 History.create_table()
 
-logger.add('log_file.log', format='{time} {level} {message}', level='DEBUG')
+logger.add('log_file.log', format='{time} {level} {message}', level='INFO')

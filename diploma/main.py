@@ -50,7 +50,7 @@ def callback_calendar(call):
         bot.send_message(call.message.chat.id, 'Комманда не найдена, посмотрите список доступных команд в /help .')
 
     if all(bot.request.dates.values()):
-        bot.get_response(call)
+        result = bot.get_response(call)
 
 
 @bot.callback_query_handler(func=lambda call: True)

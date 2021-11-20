@@ -10,6 +10,7 @@ from telebot.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, I
 from telebot import TeleBot
 from telebot_calendar import Calendar, RUSSIAN_LANGUAGE, CallbackData
 from models import History, db
+from loguru import logger
 
 
 def get_hotels_data(url: str, querystring: Dict) -> Dict:
@@ -45,6 +46,19 @@ def check_error_request(func: Callable) -> Callable:
             result = func(*args, **kwargs)
         except (json.decoder.JSONDecodeError, KeyError):
             return None
+        return result
+    return wrapper
+
+
+def log_info(func: Callable) -> Callable:
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        result = func(*args, **kwargs)
+        logger.info('mehtod: {}\targs: {}\tkwargs: {}.'.format(
+            func,
+            args,
+            kwargs,
+        ))
         return result
     return wrapper
 
@@ -100,6 +114,7 @@ class HotelRequest(TeleBot):
         self.start(message)
         return 'Введите название города'
 
+    @log_info
     def start(self, message: Message) -> None:
         """Метод ожидает ответ от пользователя и
         передает поток управления другому методу.
@@ -108,6 +123,7 @@ class HotelRequest(TeleBot):
         """
         self.register_next_step_handler(message, self.get_suggestions)
 
+    @log_info
     def get_suggestions(self, message: Message) -> None:
         """Метод запрашивет у API список городо,
         котрые подойдут для пользователя, отправляет инпуты с этими городами
@@ -119,6 +135,7 @@ class HotelRequest(TeleBot):
         except (requests.exceptions.ReadTimeout, requests.exceptions.HTTPError) as err:
             self.send_message(message.chat.id, text=str(err))
 
+    @log_info
     def get_city(self, call) -> None:
         """Метод принимает ответ от пользователя,
         записывает данные в словарь, отправляет сообщение
@@ -131,6 +148,7 @@ class HotelRequest(TeleBot):
         self.send_message(call.message.chat.id, self.class_name_dict.get(self.class_name.__name__)[0])
         self.register_next_step_handler(call.message, self.class_name_dict.get(self.class_name.__name__)[1])
 
+    @log_info
     def get_price(self, message: Message) -> None:
         """Аналогично методу get_city"""
         try:
@@ -142,6 +160,7 @@ class HotelRequest(TeleBot):
             self.send_message(message.from_user.id, 'Введите два числа через пробел')
             self.register_next_step_handler(message, self.get_price)
 
+    @log_info
     def get_distance(self, message: Message) -> None:
         """Аналогично методу get_city"""
         try:
@@ -153,6 +172,7 @@ class HotelRequest(TeleBot):
             self.send_message(message.from_user.id, 'Введите цифру')
             self.register_next_step_handler(message, self.get_distance)
 
+    @log_info
     def get_count(self, message: Message) -> None:
         """Аналогично методу get_city"""
         if not message.text.isalpha():
@@ -163,6 +183,7 @@ class HotelRequest(TeleBot):
             self.send_message(message.from_user.id, 'Введите цифру')
             self.register_next_step_handler(message, self.get_count)
 
+    @log_info
     def get_photo(self, call) -> None:
         """Аналогично методу get_city"""
         self.request.photos = call.data
@@ -174,6 +195,7 @@ class HotelRequest(TeleBot):
             self.request.photos = False
             self.get_date(call.message)
 
+    @log_info
     def get_count_photo(self, message: Message) -> None:
         if not message.text.lstrip('/').isalpha():
             self.request.count_photo = message.text if int(message.text) <= 5 else 5
@@ -182,6 +204,7 @@ class HotelRequest(TeleBot):
             self.send_message(message.chat.id, 'Введите цифру')
             self.register_next_step_handler(message, self.get_count_photo)
 
+    @log_info
     def get_date(self, message: Message, date=datetime.now()) -> None:
         self.calendar = KeyboardCalendar(language=RUSSIAN_LANGUAGE)
         self.callback_data_calendar = CallbackData('calender', 'action', 'year', 'month', 'day')
@@ -198,6 +221,7 @@ class HotelRequest(TeleBot):
             month=date.month
         ))
 
+    @log_info
     def get_response(self, call) -> None:
         """Метод принимпет ответ от пользователя,
         формирует запрос к API в соответствии с
