@@ -10,6 +10,7 @@ python-dotenv = "*"
 python-dateutil = "*"
 loguru = "*"
 requests = "*"
+telebot-calender = "*"
 
 [dev-packages]
 peewee = "*"
