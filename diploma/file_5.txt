@@ -1,0 +1,209 @@
+{
+    "term": "london",
+    "moresuggestions": 10,
+    "autoSuggestInstance": null,
+    "trackingID": "6f65c16fbfd141ceacd65708f5346af3",
+    "misspellingfallback": false,
+    "suggestions": [
+        {
+            "group": "CITY_GROUP",
+            "entities": [
+                {
+                    "geoId": "2114",
+                    "destinationId": "549499",
+                    "landmarkCityDestinationId": null,
+                    "type": "CITY",
+                    "redirectPage": "DEFAULT_PAGE",
+                    "latitude": 51.507538,
+                    "longitude": -0.127804,
+                    "searchDetail": null,
+                    "caption": "<span class='highlighted'>London</span>, England, United Kingdom",
+                    "name": "London"
+                },
+                {
+                    "geoId": "6195474",
+                    "destinationId": "1735370",
+                    "landmarkCityDestinationId": null,
+                    "type": "NEIGHBORHOOD",
+                    "redirectPage": "DEFAULT_PAGE",
+                    "latitude": 51.50727123606695,
+                    "longitude": -0.1350796890910579,
+                    "searchDetail": null,
+                    "caption": "<span class='highlighted'>London</span> City Centre, London, England, United Kingdom",
+                    "name": "London City Centre"
+                },
+                {
+                    "geoId": "8557",
+                    "destinationId": "1477058",
+                    "landmarkCityDestinationId": null,
+                    "type": "CITY",
+                    "redirectPage": "DEFAULT_PAGE",
+                    "latitude": 37.12888,
+                    "longitude": -84.083725,
+                    "searchDetail": null,
+                    "caption": "<span class='highlighted'>London</span>, Kentucky, United States of America",
+                    "name": "London"
+                },
+                {
+                    "geoId": "2038",
+                    "destinationId": "1634623",
+                    "landmarkCityDestinationId": null,
+                    "type": "CITY",
+                    "redirectPage": "DEFAULT_PAGE",
+                    "latitude": 54.99744,
+                    "longitude": -7.32099,
+                    "searchDetail": null,
+                    "caption": "<span class='highlighted'>London</span>derry, Northern Ireland, United Kingdom",
+                    "name": "Londonderry"
+                },
+                {
+                    "geoId": "800049",
+                    "destinationId": "1762406",
+                    "landmarkCityDestinationId": null,
+                    "type": "NEIGHBORHOOD",
+                    "redirectPage": "DEFAULT_PAGE",
+                    "latitude": 51.51735265982827,
+                    "longitude": -0.1814717760067861,
+                    "searchDetail": null,
+                    "caption": "Paddington, <span class='highlighted'>London</span>, England, United Kingdom",
+                    "name": "Paddington"
+                },
+                {
+                    "geoId": "1363",
+                    "destinationId": "1423789",
+                    "landmarkCityDestinationId": null,
+                    "type": "CITY",
+                    "redirectPage": "DEFAULT_PAGE",
+                    "latitude": 41.35532,
+                    "longitude": -72.099411,
+                    "searchDetail": null,
+                    "caption": "New <span class='highlighted'>London</span>, Connecticut, United States of America",
+                    "name": "New London"
+                },
+                {
+                    "geoId": "6047476",
+                    "destinationId": "1808499",
+                    "landmarkCityDestinationId": null,
+                    "type": "NEIGHBORHOOD",
+                    "redirectPage": "DEFAULT_PAGE",
+                    "latitude": 51.529952514458806,
+                    "longitude": -0.12402339913938097,
+                    "searchDetail": null,
+                    "caption": "Kings Cross St. Pancras, <span class='highlighted'>London</span>, England, United Kingdom",
+                    "name": "Kings Cross St. Pancras"
+                },
+                {
+                    "geoId": "6054501",
+                    "destinationId": "1696003",
+                    "landmarkCityDestinationId": null,
+                    "type": "NEIGHBORHOOD",
+                    "redirectPage": "DEFAULT_PAGE",
+                    "latitude": 51.49697796347775,
+                    "longitude": -0.1916682686658811,
+                    "searchDetail": null,
+                    "caption": "Kensington, <span class='highlighted'>London</span>, England, United Kingdom",
+                    "name": "Kensington"
+                },
+                {
+                    "geoId": "6054503",
+                    "destinationId": "1696010",
+                    "landmarkCityDestinationId": null,
+                    "type": "NEIGHBORHOOD",
+                    "redirectPage": "DEFAULT_PAGE",
+                    "latitude": 51.50863333212452,
+                    "longitude": -0.14489969955315687,
+                    "searchDetail": null,
+                    "caption": "Mayfair, <span class='highlighted'>London</span>, England, United Kingdom",
+                    "name": "Mayfair"
+                },
+                {
+                    "geoId": "553248625846408347",
+                    "destinationId": "10760693",
+                    "landmarkCityDestinationId": null,
+                    "type": "NEIGHBORHOOD",
+                    "redirectPage": "DEFAULT_PAGE",
+                    "latitude": 51.513760177252074,
+                    "longitude": -0.12231469203283085,
+                    "searchDetail": null,
+                    "caption": "Covent Garden, <span class='highlighted'>London</span>, England, United Kingdom",
+                    "name": "Covent Garden"
+                }
+            ]
+        },
+        {
+            "group": "HOTEL_GROUP",
+            "entities": []
+        },
+        {
+            "group": "LANDMARK_GROUP",
+            "entities": [
+                {
+                    "geoId": "501521",
+                    "destinationId": "552737",
+                    "landmarkCityDestinationId": "549499",
+                    "type": "LANDMARK",
+                    "redirectPage": "DEFAULT_PAGE",
+                    "latitude": 51.508334,
+                    "longitude": -0.075978,
+                    "searchDetail": null,
+                    "caption": "Tower of <span class='highlighted'>London</span>, London, England, United Kingdom",
+                    "name": "Tower of London"
+                },
+                {
+                    "geoId": "508420",
+                    "destinationId": "552738",
+                    "landmarkCityDestinationId": "549499",
+                    "type": "LANDMARK",
+                    "redirectPage": "DEFAULT_PAGE",
+                    "latitude": 51.508524,
+                    "longitude": -0.128247,
+                    "searchDetail": null,
+                    "caption": "Trafalgar Square, <span class='highlighted'>London</span>, England, United Kingdom",
+                    "name": "Trafalgar Square"
+                },
+                {
+                    "geoId": "6046590",
+                    "destinationId": "1637201",
+                    "landmarkCityDestinationId": "549499",
+                    "type": "LANDMARK",
+                    "redirectPage": "DEFAULT_PAGE",
+                    "latitude": 51.509715,
+                    "longitude": 0.034533,
+                    "searchDetail": null,
+                    "caption": "Excel Exhibition Centre, <span class='highlighted'>London</span>, England, United Kingdom",
+                    "name": "Excel Exhibition Centre"
+                }
+            ]
+        },
+        {
+            "group": "TRANSPORT_GROUP",
+            "entities": [
+                {
+                    "geoId": "5392460",
+                    "destinationId": "543878",
+                    "landmarkCityDestinationId": null,
+                    "type": "AIRPORT",
+                    "redirectPage": "DEFAULT_PAGE",
+                    "latitude": 51.470878,
+                    "longitude": -0.449753,
+                    "searchDetail": null,
+                    "caption": "<span class='highlighted'>London</span>, United Kingdom (LHR-Heathrow)",
+                    "name": "London (LHR-Heathrow)"
+                },
+                {
+                    "geoId": "6146489",
+                    "destinationId": "1700468",
+                    "landmarkCityDestinationId": null,
+                    "type": "METRO_STATION",
+                    "redirectPage": "DEFAULT_PAGE",
+                    "latitude": 51.503063,
+                    "longitude": 0.04974,
+                    "searchDetail": null,
+                    "caption": "<span class='highlighted'>London</span> City Airport DLR Station, London, England, United Kingdom",
+                    "name": "London City Airport DLR Station"
+                }
+            ]
+        }
+    ],
+    "geocodeFallback": false
+}

@@ -1,0 +1,299 @@
+[
+    {
+        "id": 634418464,
+        "name": "31 Street Broadway Hotel",
+        "starRating": 2.0,
+        "urls": {},
+        "address": {
+            "streetAddress": "38 West 31st Street",
+            "extendedAddress": "",
+            "locality": "New York",
+            "postalCode": "10001",
+            "region": "NY",
+            "countryName": "United States",
+            "countryCode": "us",
+            "obfuscate": false
+        },
+        "guestReviews": {
+            "unformattedRating": 5.4,
+            "rating": "5.4",
+            "total": 334,
+            "scale": 10
+        },
+        "landmarks": [
+            {
+                "label": "City center",
+                "distance": "0.7 miles"
+            },
+            {
+                "label": "Times Square",
+                "distance": "0.7 miles"
+            }
+        ],
+        "geoBullets": [],
+        "ratePlan": {
+            "price": {
+                "current": "$30",
+                "exactCurrent": 30.0
+            },
+            "features": {
+                "paymentPreference": false,
+                "noCCRequired": false
+            }
+        },
+        "neighbourhood": "NoMad",
+        "deals": {},
+        "messaging": {},
+        "badging": {},
+        "pimmsAttributes": "DoubleStamps|D13|TESCO",
+        "coordinate": {
+            "lat": 40.74725,
+            "lon": -73.98776
+        },
+        "providerType": "LOCAL",
+        "supplierHotelId": 19794327,
+        "vrBadge": "Condo Hotel",
+        "isAlternative": false,
+        "optimizedThumbUrls": {
+            "srpDesktop": "https://exp.cdn-hotels.com/hotels/20000000/19800000/19794400/19794327/fec711f6_z.jpg?impolicy=fcrop&w=250&h=140&q=high"
+        }
+    },
+    {
+        "id": 6295,
+        "name": "The Manhattan at Times Square Hotel",
+        "starRating": 4.0,
+        "urls": {},
+        "address": {
+            "streetAddress": "790 7th Ave",
+            "extendedAddress": "",
+            "locality": "New York",
+            "postalCode": "10019",
+            "region": "NY",
+            "countryName": "United States",
+            "countryCode": "us",
+            "obfuscate": false
+        },
+        "guestReviews": {
+            "unformattedRating": 5.8,
+            "rating": "5.8",
+            "total": 4139,
+            "scale": 10
+        },
+        "landmarks": [
+            {
+                "label": "City center",
+                "distance": "0.4 miles"
+            },
+            {
+                "label": "Times Square",
+                "distance": "0.4 miles"
+            }
+        ],
+        "geoBullets": [],
+        "ratePlan": {
+            "price": {
+                "current": "$76",
+                "exactCurrent": 76.3,
+                "old": "$109"
+            },
+            "features": {
+                "paymentPreference": false,
+                "noCCRequired": false
+            }
+        },
+        "neighbourhood": "Theater District",
+        "deals": {},
+        "messaging": {},
+        "badging": {},
+        "pimmsAttributes": "DoubleStamps|MESOTESTUS|D13|TESCO",
+        "coordinate": {
+            "lat": 40.762045,
+            "lon": -73.982587
+        },
+        "providerType": "MULTISOURCE",
+        "supplierHotelId": 7498,
+        "isAlternative": false,
+        "optimizedThumbUrls": {
+            "srpDesktop": "https://exp.cdn-hotels.com/hotels/1000000/10000/7500/7498/28529717_z.jpg?impolicy=fcrop&w=250&h=140&q=high"
+        }
+    },
+    {
+        "id": 425346,
+        "name": "Bowery Grand Hotel",
+        "starRating": 1.0,
+        "urls": {},
+        "address": {
+            "streetAddress": "143 Bowery",
+            "extendedAddress": "",
+            "locality": "New York",
+            "postalCode": "10002",
+            "region": "NY",
+            "countryName": "United States",
+            "countryCode": "us",
+            "obfuscate": false
+        },
+        "guestReviews": {
+            "unformattedRating": 5.0,
+            "rating": "5.0",
+            "total": 194,
+            "scale": 10
+        },
+        "landmarks": [
+            {
+                "label": "City center",
+                "distance": "2.6 miles"
+            },
+            {
+                "label": "Times Square",
+                "distance": "2.7 miles"
+            }
+        ],
+        "geoBullets": [],
+        "ratePlan": {
+            "price": {
+                "current": "$79",
+                "exactCurrent": 78.7
+            },
+            "features": {
+                "paymentPreference": false,
+                "noCCRequired": false
+            }
+        },
+        "neighbourhood": "Bowery",
+        "deals": {},
+        "messaging": {},
+        "badging": {},
+        "pimmsAttributes": "DoubleStamps|D13|TESCO",
+        "coordinate": {
+            "lat": 40.719014,
+            "lon": -73.994535
+        },
+        "providerType": "MULTISOURCE",
+        "supplierHotelId": 5660562,
+        "isAlternative": false,
+        "optimizedThumbUrls": {
+            "srpDesktop": "https://exp.cdn-hotels.com/hotels/6000000/5670000/5660600/5660562/94633c51_z.jpg?impolicy=fcrop&w=250&h=140&q=high"
+        }
+    },
+    {
+        "id": 536312,
+        "name": "Hotel Shocard at Times Square",
+        "starRating": 3.0,
+        "urls": {},
+        "address": {
+            "streetAddress": "206 West 41st Street",
+            "extendedAddress": "",
+            "locality": "New York",
+            "postalCode": "10036",
+            "region": "NY",
+            "countryName": "United States",
+            "countryCode": "us",
+            "obfuscate": false
+        },
+        "guestReviews": {
+            "unformattedRating": 8.0,
+            "rating": "8.0",
+            "total": 197,
+            "scale": 10,
+            "badge": "very-good",
+            "badgeText": "Very Good"
+        },
+        "landmarks": [
+            {
+                "label": "City center",
+                "distance": "0.1 miles"
+            },
+            {
+                "label": "Times Square",
+                "distance": "0.2 miles"
+            }
+        ],
+        "geoBullets": [],
+        "ratePlan": {
+            "price": {
+                "current": "$84",
+                "exactCurrent": 84.15,
+                "old": "$99"
+            },
+            "features": {
+                "paymentPreference": false,
+                "noCCRequired": false
+            }
+        },
+        "neighbourhood": "Central New York City",
+        "deals": {},
+        "messaging": {},
+        "badging": {},
+        "pimmsAttributes": "MESOTESTUS|D13|HRW",
+        "coordinate": {
+            "lat": 40.755533,
+            "lon": -73.987951
+        },
+        "providerType": "MULTISOURCE",
+        "supplierHotelId": 11556809,
+        "isAlternative": false,
+        "optimizedThumbUrls": {
+            "srpDesktop": "https://exp.cdn-hotels.com/hotels/12000000/11560000/11556900/11556809/7ce6cd19_z.jpg?impolicy=fcrop&w=250&h=140&q=high"
+        }
+    },
+    {
+        "id": 240327,
+        "name": "Econo Lodge Times Square",
+        "starRating": 2.5,
+        "urls": {},
+        "address": {
+            "streetAddress": "302 W 47th St",
+            "extendedAddress": "",
+            "locality": "New York",
+            "postalCode": "10036",
+            "region": "NY",
+            "countryName": "United States",
+            "countryCode": "us",
+            "obfuscate": false
+        },
+        "guestReviews": {
+            "unformattedRating": 7.0,
+            "rating": "7.0",
+            "total": 397,
+            "scale": 10,
+            "badge": "good",
+            "badgeText": "Good"
+        },
+        "landmarks": [
+            {
+                "label": "City center",
+                "distance": "0.3 miles"
+            },
+            {
+                "label": "Times Square",
+                "distance": "0.2 miles"
+            }
+        ],
+        "geoBullets": [],
+        "ratePlan": {
+            "price": {
+                "current": "$85",
+                "exactCurrent": 84.6
+            },
+            "features": {
+                "paymentPreference": false,
+                "noCCRequired": false
+            }
+        },
+        "neighbourhood": "Midtown West",
+        "deals": {},
+        "messaging": {},
+        "badging": {},
+        "pimmsAttributes": "DoubleStamps|TESCO",
+        "coordinate": {
+            "lat": 40.760582,
+            "lon": -73.987887
+        },
+        "providerType": "MULTISOURCE",
+        "supplierHotelId": 1439159,
+        "isAlternative": false,
+        "optimizedThumbUrls": {
+            "srpDesktop": "https://exp.cdn-hotels.com/hotels/2000000/1440000/1439200/1439159/7f6bb583_z.jpg?impolicy=fcrop&w=250&h=140&q=high"
+        }
+    }
+]
